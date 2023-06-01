@@ -1,4 +1,4 @@
 # Memory-Manager
-![MM-Icon](https://github.com/Arnaud-5G/Memory-Manager/assets/118852908/7442d7a7-620d-483b-be46-389edf1981bb)
+![MM-Icon](https://github.com/Arnaud-5G/Memory-Manager/assets/118852908/5adbc97a-59b5-443b-a212-c744c38ff801)
 
 Used in scripts to access data
