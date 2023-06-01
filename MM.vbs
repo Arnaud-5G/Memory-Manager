@@ -1,72 +1,64 @@
+' Commands : *All, *AllData, *Linex x=[Int]
 Function Read(Path, Var)
-    ' If Mid(Var, 1) = "*" Then
-    '     command = Split(Var, "*", 2)(1)
-    '     If Mid(command, 1, 4) = "Line" Then command = "Line"
 
-    '     Select Case command
-    '         Case "All"
+    Const nullValue = "NULL" ' represents the NULL return value [String]
+    Const newLn = Chr(13) & Chr(10) ' same as vbCrLf [Chr]
+    output = ""
 
-    '         Case "AllData"
-                
-    '         Case "Line"
-            
-    '     End Select
-    ' End If
+    ' create the fso object
+    Set FSO = CreateObject("Scripting.FileSystemObject")
+    ' access the file
+    Set File = FSO.OpenTextFile(Path, 1) ' 1 = reading, 2 = write, 8 = write at the end
 
+    ' get the data of the file then close it
+    allData = File.readall
+    File.Close
 
-    If Var = "*All" Then
-        Set FSO = CreateObject("Scripting.FileSystemObject")
-        Set File = FSO.OpenTextFile(Path, 1) ' 1 = reading, 2 = write, 8 = write at the end
+    If Mid(Var, 1) = "*" Then
+        ' removes the * to keep only the command
+        command = Split(Var, "*", 2)(1)
+        ' verify if the command is Line if yes then keep only Line
+        If Mid(command, 1, 4) = "Line" Then command = "Line"
 
-        allData = File.readall
-        File.Close
-        For Each ln In Split(allData, vbCrLf)
-            output = output & ln & vbCrLf
-        Next
-
-        ' memory management (vbs does not have one for objects only vars have one)
-        Set File = Nothing
-        Set FSO = Nothing
-
-        ' return
-        Read = output
-    ElseIf Var = "All" Then
-        Set FSO = CreateObject("Scripting.FileSystemObject")
-        Set File = FSO.OpenTextFile(Path, 1) ' 1 = reading, 2 = write, 8 = write at the end
-
-        allData = File.readall
-        File.Close
-        For Each ln In Split(allData, vbCrLf)
-            output = output & Split(ln, " ", 2)(1) & vbCrLf
-        Next
-
-        ' memory management (vbs does not have one for objects only vars have one)
-        Set File = Nothing
-        Set FSO = Nothing
-
-        ' return
-        Read = output
+        Select Case command
+            ' if command all
+            Case "All"
+                ' get all text in the file
+                For Each ln In Split(allData, newLn)
+                    output = output & ln & newLn
+                Next
+            Case "AllData"
+                ' get all text except vars in the file
+                For Each ln In Split(allData, newLn)
+                    output = output & Split(ln, " ", 2)(1) & newLn
+                Next
+            Case "Line"
+                ' get all text in one line
+                lnNum = Split(Var, "*Line", 2)(1)
+                i = 0
+                For Each ln In Split(allData, newLn)
+                    i++
+                    If i = lnNum Then output = ln
+                Next
+        End Select
     Else
-        Set FSO = CreateObject("Scripting.FileSystemObject")
-        Set File = FSO.OpenTextFile(Path, 1) ' 1 = reading, 2 = write, 8 = write at the end
-
-        allData = File.readall
-        File.Close
-        For Each ln In Split(allData, vbCrLf)
+        ' if no commands
+        For Each ln In Split(allData, newLn)
             VarName = Split(ln, " ", 2)(0)
             If VarName = Var Then
                 output = Split(ln, " ", 2)(1)
                 Exit For
             End If
         Next
-
-        ' memory management (vbs does not have one for objects only vars have one)
-        Set File = Nothing
-        Set FSO = Nothing
-
-        ' return
-        Read = output
     End If
+
+    ' memory management (vbs does not have one for objects only vars have one)
+    Set File = Nothing
+    Set FSO = Nothing
+
+    ' return
+    If output = "" Then Read = nullValue
+    Else Then Read = output
 End Function
 
 Function Write(Path, Var, Text)
@@ -117,5 +109,3 @@ Function Write(Path, Var, Text)
     FSO.DeleteFile(PathOverwrite)
 
 End Function
-
-Write "C:\Users\20200791\Desktop\test.dat", "Test", "Hello"
